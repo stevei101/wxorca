@@ -10,7 +10,7 @@ license = "MIT"
 repository = "https://github.com/wxorca/wxorca"
 
 [workspace.dependencies]
-oxidizedgraph = { path = "../oxidizedgraph" }
+oxidizedgraph = { git = "https://github.com/stevedores-org/oxidizedgraph", branch = "main" }
 surrealdb = { version = "2", features = ["kv-mem", "protocol-ws"] }
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }

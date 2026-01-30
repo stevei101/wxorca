@@ -1,6 +1,6 @@
 # WXOrca - WatsonX Orchestrate Explorer
 
-🐳 An AI-powered smart guide for IBM WatsonX Orchestrate, built with [oxidizedgraph](https://github.com/oxidizedgraph/oxidizedgraph), SurrealDB, and a modern React + Bun stack.
+🐳 An AI-powered smart guide for IBM WatsonX Orchestrate, built with [oxidizedgraph](https://github.com/stevedores-org/oxidizedgraph), SurrealDB, and a modern React + Bun stack.
 
 ## Overview
 
@@ -83,7 +83,7 @@ Navigate to http://localhost:5173 in your browser.
 
 ### Rust Agents
 
-The agents are built using [oxidizedgraph](https://github.com/oxidizedgraph/oxidizedgraph), a high-performance Rust implementation of LangGraph.
+The agents are built using [oxidizedgraph](https://github.com/stevedores-org/oxidizedgraph), a high-performance Rust implementation of LangGraph.
 
 ```rust
 // Example: Building an agent graph
@@ -198,7 +198,7 @@ MIT
 
 ## Built With
 
-- [oxidizedgraph](https://github.com/oxidizedgraph/oxidizedgraph) - Rust graph execution engine
+- [oxidizedgraph](https://github.com/stevedores-org/oxidizedgraph) - Rust graph execution engine
 - [SurrealDB](https://surrealdb.com/) - Multi-model database
 - [Elysia](https://elysiajs.com/) - Bun web framework
 - [React](https://react.dev/) - UI framework

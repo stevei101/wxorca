@@ -1,0 +1,30 @@
+[package]
+name = "wxorca-agents"
+version.workspace = true
+edition = "2021"
+authors.workspace = true
+license.workspace = true
+description = "AI-powered agents for IBM WatsonX Orchestrate exploration and guidance"
+
+[[bin]]
+name = "wxorca-cli"
+path = "src/bin/cli.rs"
+
+[lib]
+name = "wxorca_agents"
+path = "src/lib.rs"
+
+[dependencies]
+oxidizedgraph.workspace = true
+surrealdb.workspace = true
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+anyhow.workspace = true
+thiserror.workspace = true
+async-trait.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+clap = { version = "4", features = ["derive"] }

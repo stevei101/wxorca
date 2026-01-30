@@ -1,0 +1,24 @@
+{
+  "name": "wxorca-backend",
+  "version": "0.1.0",
+  "description": "Backend API for WXOrca - AI-powered guide for IBM WatsonX Orchestrate",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "start": "bun run src/index.ts",
+    "build": "bun build src/index.ts --outdir ./dist --target bun",
+    "test": "bun test",
+    "lint": "bunx @biomejs/biome check src/",
+    "format": "bunx @biomejs/biome format --write src/"
+  },
+  "dependencies": {
+    "elysia": "^1.2.0",
+    "@elysiajs/cors": "^1.1.0",
+    "@elysiajs/swagger": "^1.1.0",
+    "surrealdb": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.1.0",
+    "typescript": "^5.6.0"
+  }
+}

@@ -1,0 +1,92 @@
+name: Build and Push to GAR
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+
+env:
+  PROJECT_ID: gcp-lornu-ai
+  REGION: us-central1
+  GAR_REPO: cloud-run-source-deploy
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v27
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - name: Setup Cachix
+        uses: cachix/cachix-action@v15
+        with:
+          name: stevedores
+          skipPush: ${{ github.event_name == 'pull_request' }}
+
+      - name: Authenticate to Google Cloud
+        if: github.event_name != 'pull_request'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Configure Docker for GAR
+        if: github.event_name != 'pull_request'
+        run: |
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Build backend image
+        run: |
+          nix build .#backend-image --out-link result-backend
+          echo "Backend image built successfully"
+
+      - name: Build frontend image
+        run: |
+          nix build .#frontend-image --out-link result-frontend
+          echo "Frontend image built successfully"
+
+      - name: Load and push backend image
+        if: github.event_name != 'pull_request'
+        run: |
+          docker load < result-backend
+          docker tag wxorca-backend:latest ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/wxorca-backend:latest
+          docker tag wxorca-backend:latest ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/wxorca-backend:${{ github.sha }}
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/wxorca-backend:latest
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/wxorca-backend:${{ github.sha }}
+
+      - name: Load and push frontend image
+        if: github.event_name != 'pull_request'
+        run: |
+          docker load < result-frontend
+          docker tag wxorca-frontend:latest ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/wxorca-frontend:latest
+          docker tag wxorca-frontend:latest ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/wxorca-frontend:${{ github.sha }}
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/wxorca-frontend:latest
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/wxorca-frontend:${{ github.sha }}
+
+      - name: Summary
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "## 🐳 Images pushed to GAR" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Image | Tag |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|-----|" >> $GITHUB_STEP_SUMMARY
+          echo "| wxorca-backend | latest, ${{ github.sha }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| wxorca-frontend | latest, ${{ github.sha }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Registry: \`${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}\`" >> $GITHUB_STEP_SUMMARY

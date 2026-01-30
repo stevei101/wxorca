@@ -174,8 +174,8 @@ docker push us-central1-docker.pkg.dev/gcp-lornu-ai/cloud-run-source-deploy/wxor
 
 WXOrca is deployed to GKE using [crossplane-heaven](https://github.com/stevedores-org/crossplane-heaven) with Flux GitOps:
 
-- **Frontend**: https://wxorca.stevedores.org
-- **API**: https://api.wxorca.stevedores.org
+- **Frontend**: https://wxorca.liteworks.media
+- **API**: https://api.wxorca.liteworks.media
 
 The deployment includes:
 - 2 replicas of frontend (static-web-server)

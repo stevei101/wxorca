@@ -44,8 +44,8 @@
             darwin.apple_sdk.frameworks.SystemConfiguration
           ];
 
-          # Build the CLI binary
-          cargoBuildFlags = [ "--release" "-p" "wxorca-agents" ];
+          # Build the CLI binary (release mode is default)
+          cargoBuildFlags = [ "-p" "wxorca-agents" ];
         };
 
         # Build the frontend

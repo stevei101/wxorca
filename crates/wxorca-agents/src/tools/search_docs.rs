@@ -3,16 +3,55 @@
 use async_trait::async_trait;
 use oxidizedgraph::prelude::{NodeError, Tool};
 use serde::{Deserialize, Serialize};
+use surrealdb::{
+    engine::remote::ws::{Client, Ws},
+    opt::auth::Root,
+    Surreal,
+};
+use tracing;
 
 /// Tool for searching WatsonX Orchestrate documentation
 pub struct SearchDocsTool {
-    // In a real implementation, this would hold a database connection
-    // For now, we'll use mock data
+    db_host: String,
+    db_port: u16,
+    db_user: String,
+    db_pass: String,
 }
 
 impl SearchDocsTool {
     pub fn new() -> Self {
-        Self {}
+        Self {
+            db_host: std::env::var("SURREAL_HOST").unwrap_or_else(|_| "localhost".to_string()),
+            db_port: std::env::var("SURREAL_PORT")
+                .ok()
+                .and_then(|p| p.parse().ok())
+                .unwrap_or(8000),
+            db_user: std::env::var("SURREAL_USER").unwrap_or_else(|_| "root".to_string()),
+            db_pass: std::env::var("SURREAL_PASS").unwrap_or_else(|_| "root".to_string()),
+        }
+    }
+
+    async fn connect_db(&self) -> Result<Surreal<Client>, NodeError> {
+        let url = format!("{}:{}", self.db_host, self.db_port);
+        let client = Surreal::new::<Ws>(&url)
+            .await
+            .map_err(|e| NodeError::ToolError(format!("Failed to connect to SurrealDB: {}", e)))?;
+
+        client
+            .signin(Root {
+                username: &self.db_user,
+                password: &self.db_pass,
+            })
+            .await
+            .map_err(|e| NodeError::ToolError(format!("Failed to authenticate: {}", e)))?;
+
+        client
+            .use_ns("wxorca")
+            .use_db("main")
+            .await
+            .map_err(|e| NodeError::ToolError(format!("Failed to select database: {}", e)))?;
+
+        Ok(client)
     }
 }
 
@@ -82,14 +121,107 @@ impl Tool for SearchDocsTool {
         let input: SearchDocsInput = serde_json::from_value(arguments)
             .map_err(|e| NodeError::ToolError(format!("Invalid arguments: {}", e)))?;
 
-        // Mock documentation results
-        // In a real implementation, this would query SurrealDB
-        let results = get_mock_docs(&input.query, input.limit, input.category.as_deref());
+        // Try to query SurrealDB, fall back to mock data if connection fails
+        let results = match self.query_surreal_db(&input).await {
+            Ok(docs) if !docs.is_empty() => docs,
+            Ok(_) => {
+                // No results from DB, use mock data
+                get_mock_docs(&input.query, input.limit, input.category.as_deref())
+            }
+            Err(e) => {
+                tracing::warn!("SurrealDB query failed, using mock data: {}", e);
+                get_mock_docs(&input.query, input.limit, input.category.as_deref())
+            }
+        };
 
         let response = serde_json::to_string_pretty(&results)
             .map_err(|e| NodeError::ToolError(format!("Failed to serialize results: {}", e)))?;
 
         Ok(response)
+    }
+}
+
+impl SearchDocsTool {
+    async fn query_surreal_db(&self, input: &SearchDocsInput) -> Result<Vec<DocResult>, NodeError> {
+        let client = self.connect_db().await?;
+
+        // Build query based on whether category filter is present
+        let query_str = if input.category.is_some() {
+            r#"
+            SELECT title, content, url, category FROM wxo_docs
+            WHERE category = $category
+            LIMIT $limit
+            "#
+        } else {
+            r#"
+            SELECT title, content, url, category FROM wxo_docs
+            LIMIT $limit
+            "#
+        };
+
+        let mut query = client.query(query_str).bind(("limit", input.limit));
+
+        if let Some(ref cat) = input.category {
+            query = query.bind(("category", cat.clone()));
+        }
+
+        let mut result = query
+            .await
+            .map_err(|e| NodeError::ToolError(format!("Query failed: {}", e)))?;
+
+        #[derive(Debug, Deserialize)]
+        struct DbDoc {
+            title: String,
+            content: String,
+            url: String,
+            category: String,
+        }
+
+        let db_docs: Vec<DbDoc> = result.take(0).map_err(|e| {
+            NodeError::ToolError(format!("Failed to parse results: {}", e))
+        })?;
+
+        // Convert to DocResult with relevance scoring
+        let query_lower = input.query.to_lowercase();
+        let results: Vec<DocResult> = db_docs
+            .into_iter()
+            .map(|doc| {
+                // Simple relevance scoring based on query match
+                let title_lower = doc.title.to_lowercase();
+                let content_lower = doc.content.to_lowercase();
+                let mut relevance = 0.5f32;
+
+                if title_lower.contains(&query_lower) {
+                    relevance += 0.3;
+                }
+                if content_lower.contains(&query_lower) {
+                    relevance += 0.2;
+                }
+                for word in query_lower.split_whitespace() {
+                    if title_lower.contains(word) {
+                        relevance += 0.05;
+                    }
+                    if content_lower.contains(word) {
+                        relevance += 0.03;
+                    }
+                }
+                relevance = relevance.min(1.0);
+
+                DocResult {
+                    title: doc.title,
+                    content: if doc.content.len() > 500 {
+                        format!("{}...", &doc.content[..500])
+                    } else {
+                        doc.content
+                    },
+                    url: doc.url,
+                    category: doc.category,
+                    relevance,
+                }
+            })
+            .collect();
+
+        Ok(results)
     }
 }
 

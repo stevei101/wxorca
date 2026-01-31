@@ -54,7 +54,7 @@
           version = "0.1.0";
           src = ./frontend;
 
-          npmDepsHash = "sha256-z+YLxc+Z/wKiDgu1/lw8iaAB7OeEXzRgRyavwiaZ/jE=";
+          npmDepsHash = "sha256-Qv20sByaFadYlShyoKz5pwTj7eishh46l5hZC73zC00=";
           nodejs = pkgs.nodejs_20;
           nativeBuildInputs = [ pkgs.bun ];
 

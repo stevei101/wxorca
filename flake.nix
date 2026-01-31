@@ -54,7 +54,7 @@
           version = "0.1.0";
           src = ./backend;
 
-          npmDepsHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+          npmDepsHash = "sha256-oeEUmln6cW5+lwilkFHY0TMvd68Rp3NOon+/O2sWrDg=";
           nodejs = pkgs.nodejs_20;
 
           # Don't build, just install deps

@@ -72,7 +72,6 @@ impl NodeExecutor for AdminSearchNode {
 
             guard
                 .get_context::<String>("original_query")
-                .cloned()
                 .unwrap_or_default()
         };
 
@@ -136,7 +135,6 @@ impl NodeExecutor for AdminResponseNode {
         // Get the original query and any tool results
         let query = guard
             .get_context::<String>("original_query")
-            .cloned()
             .unwrap_or_default();
 
         // Get tool results if any
@@ -153,7 +151,7 @@ impl NodeExecutor for AdminResponseNode {
         guard.add_assistant_message(&response);
         guard.mark_complete();
 
-        Ok(NodeOutput::Finish)
+        Ok(NodeOutput::finish())
     }
 }
 

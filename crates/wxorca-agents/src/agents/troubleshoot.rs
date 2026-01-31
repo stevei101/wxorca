@@ -60,8 +60,7 @@ impl NodeExecutor for DiagnoseNode {
                 .map_err(|e| NodeError::Other(format!("Failed to read state: {}", e)))?;
             guard
                 .get_context::<String>("original_query")
-                .cloned()
-                .unwrap_or_default()
+                                .unwrap_or_default()
         };
 
         let diagnosis = diagnose_issue(&query);
@@ -77,7 +76,7 @@ impl NodeExecutor for DiagnoseNode {
     }
 }
 
-#[derive(Debug, Clone, serde::Serialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 struct Diagnosis {
     category: String,
     severity: String,
@@ -219,8 +218,7 @@ impl NodeExecutor for TroubleshootSearchNode {
 
             let query = guard
                 .get_context::<String>("original_query")
-                .cloned()
-                .unwrap_or_default();
+                                .unwrap_or_default();
 
             let category = guard
                 .get_context::<Diagnosis>("diagnosis")
@@ -287,13 +285,11 @@ impl NodeExecutor for TroubleshootResponseNode {
 
         let query = guard
             .get_context::<String>("original_query")
-            .cloned()
-            .unwrap_or_default();
+                        .unwrap_or_default();
 
         let diagnosis = guard
             .get_context::<Diagnosis>("diagnosis")
-            .cloned()
-            .unwrap_or_else(|| Diagnosis {
+                        .unwrap_or_else(|| Diagnosis {
                 category: "general".to_string(),
                 severity: "low".to_string(),
                 likely_causes: vec![],
@@ -305,7 +301,7 @@ impl NodeExecutor for TroubleshootResponseNode {
         guard.add_assistant_message(&response);
         guard.mark_complete();
 
-        Ok(NodeOutput::Finish)
+        Ok(NodeOutput::finish())
     }
 }
 

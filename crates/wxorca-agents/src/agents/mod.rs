@@ -198,7 +198,7 @@ pub fn route_by_tools(state: &AgentState) -> String {
 /// Router function based on user intent
 pub fn route_by_intent(state: &AgentState) -> String {
     if let Some(needs_tools) = state.get_context::<bool>("needs_tools") {
-        if *needs_tools {
+        if needs_tools {
             return "search_docs".to_string();
         }
     }

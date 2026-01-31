@@ -60,8 +60,7 @@ impl NodeExecutor for DocsCategoryNode {
                 .map_err(|e| NodeError::Other(format!("Failed to read state: {}", e)))?;
             guard
                 .get_context::<String>("original_query")
-                .cloned()
-                .unwrap_or_default()
+                                .unwrap_or_default()
         };
 
         let category = categorize_docs_request(&query);
@@ -77,7 +76,7 @@ impl NodeExecutor for DocsCategoryNode {
     }
 }
 
-#[derive(Debug, Clone, serde::Serialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 struct DocsCategory {
     primary: String,
     secondary: Option<String>,
@@ -153,13 +152,11 @@ impl NodeExecutor for DocsSearchNode {
 
             let query = guard
                 .get_context::<String>("original_query")
-                .cloned()
-                .unwrap_or_default();
+                                .unwrap_or_default();
 
             let category = guard
                 .get_context::<DocsCategory>("docs_category")
-                .cloned()
-                .unwrap_or_else(|| DocsCategory {
+                                .unwrap_or_else(|| DocsCategory {
                     primary: "user".to_string(),
                     secondary: None,
                     keywords: vec![],
@@ -225,13 +222,11 @@ impl NodeExecutor for DocsResponseNode {
 
         let query = guard
             .get_context::<String>("original_query")
-            .cloned()
-            .unwrap_or_default();
+                        .unwrap_or_default();
 
         let category = guard
             .get_context::<DocsCategory>("docs_category")
-            .cloned()
-            .unwrap_or_else(|| DocsCategory {
+                        .unwrap_or_else(|| DocsCategory {
                 primary: "user".to_string(),
                 secondary: None,
                 keywords: vec![],
@@ -250,7 +245,7 @@ impl NodeExecutor for DocsResponseNode {
         guard.add_assistant_message(&response);
         guard.mark_complete();
 
-        Ok(NodeOutput::Finish)
+        Ok(NodeOutput::finish())
     }
 }
 

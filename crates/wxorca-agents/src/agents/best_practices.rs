@@ -60,8 +60,7 @@ impl NodeExecutor for AssessmentNode {
                 .map_err(|e| NodeError::Other(format!("Failed to read state: {}", e)))?;
             guard
                 .get_context::<String>("original_query")
-                .cloned()
-                .unwrap_or_default()
+                                .unwrap_or_default()
         };
 
         let topic = identify_best_practices_topic(&query);
@@ -131,13 +130,11 @@ impl NodeExecutor for BestPracticesSearchNode {
 
             let query = guard
                 .get_context::<String>("original_query")
-                .cloned()
-                .unwrap_or_default();
+                                .unwrap_or_default();
 
             let topic = guard
                 .get_context::<String>("bp_topic")
-                .cloned()
-                .unwrap_or_else(|| "general".to_string());
+                                .unwrap_or_else(|| "general".to_string());
 
             (query, topic)
         };
@@ -199,20 +196,18 @@ impl NodeExecutor for BestPracticesResponseNode {
 
         let query = guard
             .get_context::<String>("original_query")
-            .cloned()
-            .unwrap_or_default();
+                        .unwrap_or_default();
 
         let topic = guard
             .get_context::<String>("bp_topic")
-            .cloned()
-            .unwrap_or_else(|| "general".to_string());
+                        .unwrap_or_else(|| "general".to_string());
 
         let response = generate_best_practices_response(&query, &topic, &self.system_prompt);
 
         guard.add_assistant_message(&response);
         guard.mark_complete();
 
-        Ok(NodeOutput::Finish)
+        Ok(NodeOutput::finish())
     }
 }
 

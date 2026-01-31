@@ -72,8 +72,7 @@ impl NodeExecutor for UsageSearchNode {
                 .map_err(|e| NodeError::Other(format!("Failed to read state: {}", e)))?;
             guard
                 .get_context::<String>("original_query")
-                .cloned()
-                .unwrap_or_default()
+                                .unwrap_or_default()
         };
 
         if query.is_empty() {
@@ -129,8 +128,7 @@ impl NodeExecutor for ExampleFetchNode {
                 .map_err(|e| NodeError::Other(format!("Failed to read state: {}", e)))?;
             guard
                 .get_context::<String>("original_query")
-                .cloned()
-                .unwrap_or_default()
+                                .unwrap_or_default()
         };
 
         if query.is_empty() {
@@ -189,8 +187,7 @@ impl NodeExecutor for UsageResponseNode {
 
         let query = guard
             .get_context::<String>("original_query")
-            .cloned()
-            .unwrap_or_default();
+                        .unwrap_or_default();
 
         let tool_results: Vec<String> = guard
             .messages
@@ -204,7 +201,7 @@ impl NodeExecutor for UsageResponseNode {
         guard.add_assistant_message(&response);
         guard.mark_complete();
 
-        Ok(NodeOutput::Finish)
+        Ok(NodeOutput::finish())
     }
 }
 

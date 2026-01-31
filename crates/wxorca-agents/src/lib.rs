@@ -22,8 +22,15 @@ pub use state::{AgentType, Message, WxoContext, WxorcaState};
 pub mod prelude {
     pub use oxidizedgraph::prelude::*;
 
-    pub use crate::agents::*;
+    pub use crate::agents::build_agent_graph;
+    pub use crate::agents::{
+        AdminSetupAgent, BestPracticesAgent, DocsHelperAgent, TroubleshootAgent,
+        UsageAssistantAgent,
+    };
     pub use crate::db::Database;
-    pub use crate::state::*;
-    pub use crate::tools::*;
+    // Note: WxorcaState uses its own MessageRole which differs from oxidizedgraph's
+    pub use crate::state::{AgentType, WxoContext, WxorcaState};
+    pub use crate::state::MessageRole as WxorcaMessageRole;
+    pub use crate::state::Message as WxorcaMessage;
+    pub use crate::tools::create_tool_registry;
 }

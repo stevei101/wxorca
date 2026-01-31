@@ -217,9 +217,9 @@ impl Database {
                 };
                 "#,
             )
-            .bind(("session_id", &record.session_id))
+            .bind(("session_id", record.session_id.clone()))
             .bind(("agent_type", serde_json::to_string(&record.agent_type)?))
-            .bind(("messages", &record.messages))
+            .bind(("messages", record.messages.clone()))
             .bind(("created_at", record.created_at))
             .await
             .context("Failed to save conversation")?;
@@ -229,6 +229,7 @@ impl Database {
 
     /// Load a conversation by session ID
     pub async fn load_conversation(&self, session_id: &str) -> Result<Option<WxorcaState>> {
+        let session_id = session_id.to_string();
         let mut result = self
             .client
             .query("SELECT * FROM conversations WHERE session_id = $session_id")
@@ -251,6 +252,7 @@ impl Database {
 
     /// Delete a conversation
     pub async fn delete_conversation(&self, session_id: &str) -> Result<()> {
+        let session_id = session_id.to_string();
         self.client
             .query("DELETE FROM conversations WHERE session_id = $session_id")
             .bind(("session_id", session_id))
@@ -277,6 +279,7 @@ impl Database {
 
     /// Add a documentation record
     pub async fn add_doc(&self, doc: &DocRecord) -> Result<Thing> {
+        let doc = doc.clone();
         let created: Option<DocRecord> = self
             .client
             .create("wxo_docs")
@@ -291,6 +294,7 @@ impl Database {
 
     /// Search documentation by text query (simple contains search)
     pub async fn search_docs(&self, query: &str, limit: usize) -> Result<Vec<DocRecord>> {
+        let query = query.to_string();
         let mut result = self
             .client
             .query(
@@ -315,6 +319,7 @@ impl Database {
         category: &str,
         limit: usize,
     ) -> Result<Vec<DocRecord>> {
+        let category = category.to_string();
         let mut result = self
             .client
             .query("SELECT * FROM wxo_docs WHERE category = $category LIMIT $limit")
@@ -348,6 +353,7 @@ impl Database {
 
     /// Submit user feedback
     pub async fn submit_feedback(&self, feedback: &FeedbackRecord) -> Result<()> {
+        let feedback = feedback.clone();
         self.client
             .create::<Option<FeedbackRecord>>("feedback")
             .content(feedback)
@@ -359,6 +365,7 @@ impl Database {
 
     /// Get feedback for a session
     pub async fn get_session_feedback(&self, session_id: &str) -> Result<Vec<FeedbackRecord>> {
+        let session_id = session_id.to_string();
         let mut result = self
             .client
             .query("SELECT * FROM feedback WHERE session_id = $session_id ORDER BY created_at DESC")

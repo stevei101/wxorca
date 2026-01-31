@@ -190,7 +190,7 @@ fn convert_to_agent_state(wxorca_state: &WxorcaState) -> AgentState {
     // Use with_system_and_user if we have a user message, otherwise just create with system
     let system_prompt = wxorca_state.agent_type.system_prompt();
 
-    let mut agent_state = if let Some(first_user_msg) = wxorca_state.messages.iter().find(|m| m.role == MessageRole::User) {
+    let mut agent_state = if let Some(first_user_msg) = wxorca_state.messages.iter().find(|m| m.role == WxorcaMessageRole::User) {
         AgentState::with_system_and_user(system_prompt, &first_user_msg.content)
     } else {
         let mut state = AgentState::new();
@@ -202,19 +202,19 @@ fn convert_to_agent_state(wxorca_state: &WxorcaState) -> AgentState {
     let mut skip_first_user = true;
     for msg in &wxorca_state.messages {
         match msg.role {
-            MessageRole::User => {
+            WxorcaMessageRole::User => {
                 if skip_first_user {
                     skip_first_user = false;
                     continue;
                 }
                 agent_state.add_user_message(&msg.content);
             }
-            MessageRole::Assistant => agent_state.add_assistant_message(&msg.content),
-            MessageRole::System => {
+            WxorcaMessageRole::Assistant => agent_state.add_assistant_message(&msg.content),
+            WxorcaMessageRole::System => {
                 // System messages are added via the initial state
                 agent_state.messages.push(oxidizedgraph::prelude::Message::system(&msg.content));
             }
-            MessageRole::Tool => {
+            WxorcaMessageRole::Tool => {
                 if let Some(ref tool_call_id) = msg.tool_call_id {
                     agent_state.add_tool_result(tool_call_id, &msg.content);
                 }

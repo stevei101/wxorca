@@ -284,7 +284,7 @@ token = get_wxo_token(
             title: "Error Handling Pattern".to_string(),
             description: "Best practice for error handling in workflows".to_string(),
             language: "json".to_string(),
-            code: r#"{
+            code: r##"{
   "name": "robust_workflow",
   "steps": [
     {
@@ -320,7 +320,7 @@ token = get_wxo_token(
       "action": "cancel_and_notify"
     }
   }
-}"#
+}"##
             .to_string(),
             tags: vec!["workflow".to_string(), "error-handling".to_string(), "best-practices".to_string()],
         },

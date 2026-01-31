@@ -48,23 +48,27 @@
           cargoBuildFlags = [ "-p" "wxorca-agents" ];
         };
 
-        # Build the frontend with bun
-        wxorca-frontend = pkgs.stdenv.mkDerivation {
+        # Build the frontend (npm for deps, bun for build)
+        wxorca-frontend = pkgs.buildNpmPackage {
           pname = "wxorca-frontend";
           version = "0.1.0";
           src = ./frontend;
 
+          npmDepsHash = "sha256-z+YLxc+Z/wKiDgu1/lw8iaAB7OeEXzRgRyavwiaZ/jE=";
+          nodejs = pkgs.nodejs_20;
           nativeBuildInputs = [ pkgs.bun ];
 
           buildPhase = ''
-            export HOME=$TMPDIR
-            bun install --frozen-lockfile
+            runHook preBuild
             bun run build
+            runHook postBuild
           '';
 
           installPhase = ''
+            runHook preInstall
             mkdir -p $out
             cp -r dist/* $out/
+            runHook postInstall
           '';
         };
 

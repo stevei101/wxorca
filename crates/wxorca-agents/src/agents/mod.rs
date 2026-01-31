@@ -19,7 +19,7 @@ pub use docs_helper::DocsHelperAgent;
 pub use troubleshoot::TroubleshootAgent;
 pub use usage_assistant::UsageAssistantAgent;
 
-use crate::state::{AgentType, WxorcaState};
+use crate::state::AgentType;
 use crate::tools::create_tool_registry;
 use oxidizedgraph::prelude::*;
 use std::sync::Arc;
@@ -84,6 +84,14 @@ impl NodeExecutor for AnalyzeQueryNode {
 fn detect_intent(query: &str) -> &'static str {
     let query_lower = query.to_lowercase();
 
+    // Check for "example" patterns first (more specific than "show me")
+    if query_lower.contains("example")
+        || query_lower.contains("sample")
+        || query_lower.contains("show me code")
+    {
+        return "example";
+    }
+
     if query_lower.contains("how do i")
         || query_lower.contains("how to")
         || query_lower.contains("show me")
@@ -106,16 +114,10 @@ fn detect_intent(query: &str) -> &'static str {
         return "search";
     }
 
-    if query_lower.contains("example")
-        || query_lower.contains("sample")
-        || query_lower.contains("show me code")
-    {
-        return "example";
-    }
-
     if query_lower.contains("validate")
         || query_lower.contains("check")
-        || query_lower.contains("is this correct")
+        || query_lower.contains("correct")
+        || query_lower.contains("is this right")
     {
         return "validate";
     }

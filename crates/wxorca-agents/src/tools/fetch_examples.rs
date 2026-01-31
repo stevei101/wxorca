@@ -32,7 +32,7 @@ fn default_limit() -> usize {
     3
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct CodeExample {
     title: String,
     description: String,

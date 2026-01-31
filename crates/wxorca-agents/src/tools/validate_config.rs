@@ -34,7 +34,7 @@ enum ConfigType {
     Authentication,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct ValidationResult {
     valid: bool,
     errors: Vec<ValidationError>,
@@ -42,14 +42,14 @@ struct ValidationResult {
     suggestions: Vec<String>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct ValidationError {
     field: String,
     message: String,
     code: String,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct ValidationWarning {
     field: String,
     message: String,

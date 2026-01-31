@@ -35,7 +35,7 @@ fn default_limit() -> usize {
     5
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct DocResult {
     title: String,
     content: String,

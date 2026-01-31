@@ -48,6 +48,26 @@
           cargoBuildFlags = [ "-p" "wxorca-agents" ];
         };
 
+        # Build the backend API with dependencies
+        wxorca-api = pkgs.buildNpmPackage {
+          pname = "wxorca-api";
+          version = "0.1.0";
+          src = ./backend;
+
+          npmDepsHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+          nodejs = pkgs.nodejs_20;
+
+          # Don't build, just install deps
+          dontNpmBuild = true;
+
+          installPhase = ''
+            runHook preInstall
+            mkdir -p $out
+            cp -r . $out/
+            runHook postInstall
+          '';
+        };
+
         # Build the frontend (npm for deps, bun for build)
         wxorca-frontend = pkgs.buildNpmPackage {
           pname = "wxorca-frontend";
@@ -101,7 +121,7 @@
           };
 
           fakeRootCommands = ''
-            cp -r ${./backend}/* app/backend/
+            cp -r ${wxorca-api}/* app/backend/
             cp ${wxorca-backend}/bin/wxorca-cli app/target/release/ || true
           '';
         };
@@ -167,6 +187,7 @@
         packages = {
           default = wxorca-backend;
           backend = wxorca-backend;
+          api = wxorca-api;
           frontend = wxorca-frontend;
 
           # OCI images
